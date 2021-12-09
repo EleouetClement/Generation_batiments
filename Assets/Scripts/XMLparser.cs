@@ -23,31 +23,53 @@ public class XMLparser : MonoBehaviour
         
     }
 
+    void TestSomething()
+    { 
+}
     //Load Data from a GML document
     public void LoadData()
     {
         XDocument doc = XDocument.Load(filePath);
         XElement indoorFeatures = doc.Root;
 
-        XNamespace XsGml = indoorFeatures.GetNamespaceOfPrefix("gml");
-        XNamespace XBldg = indoorFeatures.GetNamespaceOfPrefix("bldg");
-        XNamespace Xapp = indoorFeatures.GetNamespaceOfPrefix("app");
-        XNamespace Xcore = indoorFeatures.GetNamespaceOfPrefix("core");
-
-        var results = doc.Elements(Xcore + "cityObjectMember").Select(
-            x=> new
+        XNamespace xsGml = indoorFeatures.GetNamespaceOfPrefix("gml");
+        XNamespace xBldg = indoorFeatures.GetNamespaceOfPrefix("bldg");
+        XNamespace xsApp = indoorFeatures.GetNamespaceOfPrefix("app");
+        XNamespace xsCore = indoorFeatures.GetNamespaceOfPrefix("core");
+        
+        var results = doc.Elements(xsCore + "CityModel")
+            .Select(x => new
             {
-                boundaries = x.Descendants(XBldg + "Building").Select(
-                    y=> new
-                    {
-                        date = y.Descendants(Xcore + "creationDate")
-                    })
-            }).FirstOrDefault();
+            boundaries = x.Descendants(xsGml + "Envelope")
+                .Select(y => new {
+                    lowerbound = (string)y.Element(xsGml + "lowerCorner"),
+                    upperbound = (string)y.Element(xsGml + "upperCorner")
+                }),
 
-        foreach(var item in results.boundaries)
-        {
-            Debug.Log(item.date);
-        }
+            buildings = x.Descendants(xBldg+ "Building").Select(y => new
+            {
+
+                positions = x.Descendants(xsGml + "LinearRing")
+                .Select(z => new
+                {
+                    coord = (string)z.Element(xsGml + "posList")
+                }).ToList()
+            }),
+
+            texture = x.Descendants(xsApp + "ParameterizedTexture")
+                            .Descendants(xsApp + "target")
+                                .Descendants(xsApp + "TexCoordList")
+                                .Select(y => new
+                                {
+                                    textCoord = y.Elements(xsApp + "textureCoordinates").FirstOrDefault()
+                                }).ToList()
+        }).FirstOrDefault();
+
+
+        //foreach(var item in results.boundaries)
+        //{
+        //    Debug.Log(item.date);
+        //}
     }
 
 
