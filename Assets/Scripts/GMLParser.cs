@@ -23,6 +23,14 @@ public class GMLParser : MonoBehaviour
     {
         batimentsListe = new List<Batiments>();
         LoadData();
+        Picking1Sufrace();
+    }
+
+    private void Picking1Sufrace()
+    {
+        Batiments testBuilding = batimentsListe[0];
+        Membre surface1 = testBuilding.GetSurface(0);
+        surface1.EarClipping();
     }
 
     public void LoadData()

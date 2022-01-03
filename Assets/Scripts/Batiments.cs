@@ -30,4 +30,9 @@ public class Batiments
         //TO DO
         //throw new NotImplementedException();
     }
+
+    public Membre GetSurface(int id)
+    {
+        return surfaces[id];
+    }
 }
