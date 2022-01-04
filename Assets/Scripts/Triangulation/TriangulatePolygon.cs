@@ -8,24 +8,8 @@ using UnityEngine;
 /// </summary>
 public static class TriangulatePolygon
 {
-    public static float FindPolygonArea(Vector2[] vertices)
-    {
-        float totalArea = 0f;
 
-        for (int i = 0; i < vertices.Length; i++)
-        {
-            Vector2 a = vertices[i];
-            Vector2 b = vertices[(i + 1) % vertices.Length];
-
-            float dy = (a.y + b.y) / 2f;
-            float dx = b.x - a.x;
-
-            float area = dy * dx;
-            totalArea += area;
-        }
-
-        return Mathf.Abs(totalArea);
-    }
+    public const bool DEBUGMODE = false;
 
     /// <summary>
     /// Computes the triangulation of a polygon defined by a 2d vertex array, and generates a triangle array to display it.
@@ -37,21 +21,23 @@ public static class TriangulatePolygon
     public static bool Triangulate(Vector2[] vertices, out int[] triangles, out string errorMessage)
     {
         triangles = null;
-        errorMessage = string.Empty;
+        errorMessage = "Unknown error, Iteration culled after 1000 attempts.";
+
+
+        if(DEBUGMODE) for (int i = 0; i < vertices.Length; i++)
+            Debug.Log("Poly triangulation flat : " + vertices[i]);
 
         if (vertices is null)
         {
             errorMessage = "The vertex list is null.";
             return false;
         }
-
-        if (vertices.Length < 3)
+        else if (vertices.Length < 3)
         {
             errorMessage = "The vertex list must have at least 3 vertices.";
             return false;
         }
-
-        if (vertices.Length > 1024)
+        else if (vertices.Length > 1024)
         {
             errorMessage = "The max vertex list length is 1024";
             return false;
@@ -86,8 +72,9 @@ public static class TriangulatePolygon
                 Vector2 va_to_vc = vc - va;
 
                 // Is ear test vertex convex?
-                if (Cross2(va_to_vb, va_to_vc) < 0f)
+                if (Cross2(va_to_vb, va_to_vc) > 0f)
                 {
+                    if (DEBUGMODE) Debug.Log("Convex angle, skipping " + i + " with va_to_vb=" + va_to_vb + " and va_to_vc=" + va_to_vc);
                     continue;
                 }
 
@@ -103,9 +90,10 @@ public static class TriangulatePolygon
 
                     Vector2 p = vertices[j];
 
-                    if (PointInTriangle(p, vb, va, vc))
+                    if (IsPointInTriangle(p, vb, va, vc))
                     {
                         isEar = false;
+                        if (DEBUGMODE) Debug.Log("Point is in triangle. Point " + p + " at index " + j + " is not in triangle {" + vb + va + vc + "}");
                         break;
                     }
                 }
@@ -113,8 +101,10 @@ public static class TriangulatePolygon
                 if (isEar)
                 {
                     triangles[triangleIndexCount++] = b;
-                    triangles[triangleIndexCount++] = a;
                     triangles[triangleIndexCount++] = c;
+                    triangles[triangleIndexCount++] = a;
+
+                    if (DEBUGMODE) Debug.Log("Adding triangle for b.a.c. " + b + "/" + a + "/" + c + " / culled vertice index : " + i);
 
                     indexList.RemoveAt(i);
                     break;
@@ -123,30 +113,32 @@ public static class TriangulatePolygon
         }
 
         triangles[triangleIndexCount++] = indexList[0];
-        triangles[triangleIndexCount++] = indexList[1];
         triangles[triangleIndexCount++] = indexList[2];
+        triangles[triangleIndexCount++] = indexList[1];
 
         return alarm > 0;
     }
 
-    private static float Sign(Vector2 p1, Vector2 p2, Vector2 p3)
+    public static bool IsPointInTriangle(Vector2 p, Vector2 a, Vector2 b, Vector2 c)
     {
-        return (p1.x - p3.x) * (p2.y - p3.y) - (p2.x - p3.x) * (p1.y - p3.y);
-    }
+        Vector2 ab = b - a;
+        Vector2 bc = c - b;
+        Vector2 ca = a - c;
 
-    private static bool PointInTriangle(Vector2 pt, Vector2 v1, Vector2 v2, Vector2 v3)
-    {
-        float d1, d2, d3;
-        bool has_neg, has_pos;
+        Vector2 ap = p - a;
+        Vector2 bp = p - b;
+        Vector2 cp = p - c;
 
-        d1 = Sign(pt, v1, v2);
-        d2 = Sign(pt, v2, v3);
-        d3 = Sign(pt, v3, v1);
+        float cross1 = Cross2(ab, ap);
+        float cross2 = Cross2(bc, bp);
+        float cross3 = Cross2(ca, cp);
 
-        has_neg = (d1 < 0) || (d2 < 0) || (d3 < 0);
-        has_pos = (d1 > 0) || (d2 > 0) || (d3 > 0);
+        if (cross1 > 0f || cross2 > 0f || cross3 > 0f)
+        {
+            return false;
+        }
 
-        return !(has_neg && has_pos);
+        return true;
     }
 
     private static T GetLooping<T>(List<T> storage, int index)
