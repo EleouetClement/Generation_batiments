@@ -7,9 +7,9 @@ public class Membre
     public string Type { get; private set; }
     public string IntTexId { get; private set; }
     public string ExtTexId { get; private set; }
-    public List<Vector> positionsExt { get; private set; }
-    public List<Vector> positionsInt { get; private set; }
-    public Vector[] textures { get; private set; }
+    public List<Vector3> positionsExt { get; private set; }
+    public List<Vector3> positionsInt { get; private set; }
+    public Vector3[] textures { get; private set; }
 
     public Membre(string identifiant, string type)
     {
@@ -17,8 +17,8 @@ public class Membre
         Type = type;
         IntTexId = "";
         ExtTexId = "";
-        positionsExt = new List<Vector>();
-        positionsInt = new List<Vector>();
+        positionsExt = new List<Vector3>();
+        positionsInt = new List<Vector3>();
     }
 
     /// <summary>
@@ -47,7 +47,7 @@ public class Membre
     }
 
     //Set the poslist of an exterior surface
-    public void SetExt(string id, List<Vector> positions)
+    public void SetExt(string id, List<Vector3> positions)
     {
         //Adding the ExtId
         ExtTexId = id;
@@ -58,7 +58,7 @@ public class Membre
     }
 
     //Set the poslist of an interior surface
-    public void SetInt(string id, List<Vector> positions)
+    public void SetInt(string id, List<Vector3> positions)
     {
         //Adding the ExtId
         IntTexId = id;

@@ -19,12 +19,47 @@ public class GMLParser : MonoBehaviour
     const int scaleConst = 1000;
     static List<Batiments> batimentsListe;
     [SerializeField] string filePath;
+    private Dictionary<string, List<Vector2>> textures;
+    UnityEngine.Vector3[] gizmos;
     void Start()
     {
         batimentsListe = new List<Batiments>();
         LoadData();
-        Picking1Sufrace();
+
+        //UnityEngine.Debug.Log(ParseLongFloat("13584.68321"));
+        //Display testing
+        Vector3[] vertices = GetRandomShape(0, 0);
+        int[] triangles = { 0, 1, 2 };
+        DisplayBuilding(vertices, triangles);
+        gizmos = new Vector3[3];
+        vertices.CopyTo(gizmos, 0);
     }
+
+    //get vertices from a surface of a "batiment"
+    private Vector3[] GetRandomShape(int buildingID, int surfaceID)
+    {
+        Membre surface = batimentsListe[buildingID].GetSurface(surfaceID);
+        int nbPositions = surface.positionsExt.Count;
+        Vector3[] vertices = new Vector3[3];
+        vertices[0] = new Vector3((float)surface.positionsExt[0].x, (float)surface.positionsExt[0].y, (float)surface.positionsExt[0].z);
+        vertices[1] = new Vector3((float)surface.positionsExt[nbPositions / 2].x, (float)surface.positionsExt[nbPositions / 2].y, (float)surface.positionsExt[nbPositions / 2].z);
+        vertices[2] = new Vector3((float)surface.positionsExt[nbPositions - 1].x, (float)surface.positionsExt[nbPositions - 1].y, (float)surface.positionsExt[nbPositions - 1].z);
+        return vertices;
+    }
+
+
+    //Display a building using vertices and triangles array 
+    private void DisplayBuilding(UnityEngine.Vector3[] vertices, int[] triangles)
+    {
+        gameObject.AddComponent<MeshRenderer>();
+        gameObject.AddComponent<MeshFilter>();
+        Mesh msh = new Mesh();
+        msh.vertices = vertices;
+        msh.triangles = triangles;
+        msh.RecalculateNormals();
+        gameObject.GetComponent<MeshFilter>().mesh = msh;
+    }
+
 
     private void Picking1Sufrace()
     {
@@ -32,6 +67,40 @@ public class GMLParser : MonoBehaviour
         Membre surface1 = testBuilding.GetSurface(0);
         surface1.EarClipping();
     }
+
+
+    static double ParseLongFloat(string number)
+    {
+        string[] numbers = number.Split('.');
+        if(numbers.Length != 2)
+        {
+            return -1.0;
+        }
+        string left = "";
+        string right = "";
+
+        if(numbers[0].Length < 3)
+        {
+            left = numbers[0];    
+        }
+        else
+        {
+            left = numbers[0][0].ToString() + numbers[0][1].ToString() + numbers[0][2].ToString();
+        }
+        if(numbers[1].Length < 3)
+        {
+            right = numbers[1];
+        }
+        else
+        {
+            right = numbers[1][0].ToString() + numbers[1][1].ToString() + numbers[1][2].ToString();
+        }
+        left = left + "." + right;
+        double value = Convert.ToDouble(left, CultureInfo.InvariantCulture);
+        return value;
+    }
+
+
 
     public void LoadData()
     {
@@ -120,7 +189,7 @@ public class GMLParser : MonoBehaviour
         stopwatch.Stop();
         UnityEngine.Debug.Log("_____DONE_____(duree : " + stopwatch.Elapsed.TotalMinutes + ")");
 
-       //Console.ReadKey();
+        //Console.ReadKey();
     }
     static void AddMemberPositions(XElement elem, Membre surfMember, int surfaceType)
     {
@@ -130,14 +199,17 @@ public class GMLParser : MonoBehaviour
             string extId = elem.Attribute(xsGml + "id").Value;
             List<string> positionsString = elem.Element(xsGml + "posList").Value.Split(' ').ToList();
 
-            List<Vector> positions = new List<Vector>();
+            List<Vector3> positions = new List<Vector3>();
             //Setting up the Vector by converting the positions into floats
             for (int i = 0; i < positionsString.Count; i += 3)
             {
-                Vector tmp = Vector.zero;
+                Vector3 tmp = Vector3.zero;
                 tmp.x = (float)Convert.ToDouble(positionsString[i], CultureInfo.InvariantCulture) / scaleConst;
                 tmp.y = (float)Convert.ToDouble(positionsString[i + 1], CultureInfo.InvariantCulture) / scaleConst;
                 tmp.z = (float)Convert.ToDouble(positionsString[i + 2], CultureInfo.InvariantCulture) / scaleConst;
+                //tmp.x = ParseLongFloat(positionsString[i]);
+                //tmp.y = ParseLongFloat(positionsString[i+1]);
+               // tmp.z = ParseLongFloat(positionsString[i+2]);
                 positions.Add(tmp);
             }
             //Adding the poslist to the surfaceMember
@@ -178,6 +250,19 @@ public class GMLParser : MonoBehaviour
             }
 
             tmp.AddSurface(surfMember);
+        }
+    }
+
+    private void OnDrawGizmos()
+    {
+        if(gizmos==null)
+        {
+            return;
+        }
+        Gizmos.color = Color.red;
+        for (int i = 0; i < gizmos.Length; i++)
+        {
+            Gizmos.DrawSphere(gizmos[i], 0.1f);
         }
     }
 }
