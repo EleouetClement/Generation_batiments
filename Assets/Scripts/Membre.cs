@@ -65,4 +65,12 @@ public class Membre
         //Adding the positions
         positionsInt = positions;
     }
+
+    public override string ToString()
+    {
+        string toreturn = "Member " + Id + " : {";
+        for (int i = 0; i < positionsExt.Count; i++)
+            toreturn += (i==0?"":",")+positionsExt[i];
+        return toreturn + "}";
+    }
 }

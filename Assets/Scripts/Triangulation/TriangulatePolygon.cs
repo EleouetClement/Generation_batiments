@@ -67,8 +67,11 @@ public static class TriangulatePolygon
         triangles = new int[totalTriangleIndexCount];
         int triangleIndexCount = 0;
 
-        while (indexList.Count > 3)
+        int alarm = 1000;
+
+        while (indexList.Count > 3 && alarm >= 0)
         {
+            alarm--;
             for (int i = 0; i < indexList.Count; i++)
             {
                 int a = indexList[i];
@@ -123,7 +126,7 @@ public static class TriangulatePolygon
         triangles[triangleIndexCount++] = indexList[1];
         triangles[triangleIndexCount++] = indexList[2];
 
-        return true;
+        return alarm > 0;
     }
 
     private static float Sign(Vector2 p1, Vector2 p2, Vector2 p3)
