@@ -19,7 +19,8 @@ public class GMLParser : MonoBehaviour
     const int scaleConst = 1000;
     static List<Batiments> batimentsListe;
     [SerializeField] string filePath;
-    Vector3[] gizmos;
+    private Dictionary<string, List<Vector2>> textures;
+    UnityEngine.Vector3[] gizmos;
     void Start()
     {
         batimentsListe = new List<Batiments>();
@@ -48,7 +49,7 @@ public class GMLParser : MonoBehaviour
 
 
     //Display a building using vertices and triangles array 
-    private void DisplayBuilding(Vector3[] vertices, int[] triangles)
+    private void DisplayBuilding(UnityEngine.Vector3[] vertices, int[] triangles)
     {
         gameObject.AddComponent<MeshRenderer>();
         gameObject.AddComponent<MeshFilter>();
@@ -198,17 +199,17 @@ public class GMLParser : MonoBehaviour
             string extId = elem.Attribute(xsGml + "id").Value;
             List<string> positionsString = elem.Element(xsGml + "posList").Value.Split(' ').ToList();
 
-            List<Vector> positions = new List<Vector>();
+            List<Vector3> positions = new List<Vector3>();
             //Setting up the Vector by converting the positions into floats
             for (int i = 0; i < positionsString.Count; i += 3)
             {
-                Vector tmp = Vector.zero;
-                //tmp.x = Convert.ToDouble(positionsString[i], CultureInfo.InvariantCulture) / scaleConst;
-                //tmp.y = Convert.ToDouble(positionsString[i + 1], CultureInfo.InvariantCulture) / scaleConst;
-                //tmp.z = Convert.ToDouble(positionsString[i + 2], CultureInfo.InvariantCulture) / scaleConst;
-                tmp.x = ParseLongFloat(positionsString[i]);
-                tmp.y = ParseLongFloat(positionsString[i+1]);
-                tmp.z = ParseLongFloat(positionsString[i+2]);
+                Vector3 tmp = Vector3.zero;
+                tmp.x = (float)Convert.ToDouble(positionsString[i], CultureInfo.InvariantCulture) / scaleConst;
+                tmp.y = (float)Convert.ToDouble(positionsString[i + 1], CultureInfo.InvariantCulture) / scaleConst;
+                tmp.z = (float)Convert.ToDouble(positionsString[i + 2], CultureInfo.InvariantCulture) / scaleConst;
+                //tmp.x = ParseLongFloat(positionsString[i]);
+                //tmp.y = ParseLongFloat(positionsString[i+1]);
+               // tmp.z = ParseLongFloat(positionsString[i+2]);
                 positions.Add(tmp);
             }
             //Adding the poslist to the surfaceMember
