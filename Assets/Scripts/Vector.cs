@@ -33,4 +33,10 @@ public class Vector
     {
         return "(" + x + "," + y + "," + z + ")";
     }
+
+    public Vector Clone()
+    {
+        return new Vector(x, y, z);
+    }
+
 }

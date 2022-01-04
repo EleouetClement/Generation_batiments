@@ -26,6 +26,11 @@ public class GMLParser : MonoBehaviour
         LoadData();
 
         //UnityEngine.Debug.Log(ParseLongFloat("13584.68321"));
+        //UnityEngine.Debug.Log(ParseLongFloat("135846841.87466548321"));
+        //UnityEngine.Debug.Log(ParseLongFloat("13584.72168321"));
+        //UnityEngine.Debug.Log(ParseLongFloat("84.72"));
+        //UnityEngine.Debug.Log(ParseLongFloat("845.7298"));
+        //UnityEngine.Debug.Log(ParseLongFloat(".7298"));
         //Display testing
         Vector3[] vertices = GetRandomShape(0, 0);
         int[] triangles = { 0, 1, 2 };
@@ -71,7 +76,7 @@ public class GMLParser : MonoBehaviour
     static double ParseLongFloat(string number)
     {
         string[] numbers = number.Split('.');
-        if(numbers.Length != 2)
+        if(numbers.Length != 2 || numbers[0] == "" || numbers[1] == "")
         {
             return -1.0;
         }
@@ -202,7 +207,8 @@ public class GMLParser : MonoBehaviour
             //Setting up the Vector by converting the positions into floats
             for (int i = 0; i < positionsString.Count; i += 3)
             {
-                Vector tmp = Vector.zero;
+                //Vector tmp = Vector.zero.Clone();
+                Vector tmp = new Vector(0.0, 0.0, 0.0);
                 //tmp.x = Convert.ToDouble(positionsString[i], CultureInfo.InvariantCulture) / scaleConst;
                 //tmp.y = Convert.ToDouble(positionsString[i + 1], CultureInfo.InvariantCulture) / scaleConst;
                 //tmp.z = Convert.ToDouble(positionsString[i + 2], CultureInfo.InvariantCulture) / scaleConst;
