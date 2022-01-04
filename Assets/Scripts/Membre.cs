@@ -22,9 +22,10 @@ public class Membre
         positionsInt = new List<Vector>();
     }
 
-    public void EarClipping()
+    public int [] EarClipping()
     {
-
+        //TO DO
+        return null;
     }
 
     //Set the poslist of an exterior surface

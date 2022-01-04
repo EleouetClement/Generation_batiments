@@ -28,7 +28,7 @@ public class GMLParser : MonoBehaviour
 
     private void Picking1Sufrace()
     {
-        Batiments testBuilding = batimentsListe[0];
+        Batiments testBuilding = batimentsListe[156];
         Membre surface1 = testBuilding.GetSurface(0);
         surface1.EarClipping();
     }

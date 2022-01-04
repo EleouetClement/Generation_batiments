@@ -4,20 +4,20 @@ using UnityEngine;
 
 public class Vector
 {
-    public float x { get; set; }
-    public float y { get; set; }
-    public float z { get; set; }
+    public double x { get; set; }
+    public double y { get; set; }
+    public double z { get; set; }
 
     public static Vector zero = new Vector(0.0f, 0.0f, 0.0f);
 
-    public Vector(float x, float y, float z)
+    public Vector(double x, double y, double z)
     {
         this.x = x;
         this.y = y;
         this.z = z;
     }
 
-    public Vector(float x, float y)
+    public Vector(double x, double y)
     {
         this.x = x;
         this.y = y;
@@ -26,5 +26,11 @@ public class Vector
     public Vector crossProduct(Vector vb)
     {
         return new Vector(x * vb.x, y * vb.y, z * vb.z);
+    }
+
+
+    public override string ToString()
+    {
+        return "(" + x + "," + y + "," + z + ")";
     }
 }
