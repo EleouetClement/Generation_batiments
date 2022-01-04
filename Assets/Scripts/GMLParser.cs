@@ -45,20 +45,36 @@ public class GMLParser : MonoBehaviour
         }*/
 
         {
-            int buildingid = 5, surfaceid = 0;
+            int buildingid = 5;
+            DisplayOneBuilding(buildingid);
+            //Membre surface = batimentsListe[buildingid].GetSurface(surfaceid);
+            //int[] triangles = surface.EarClipping();
 
-            Membre surface = batimentsListe[buildingid].GetSurface(surfaceid);
-            int[] triangles = surface.EarClipping();
+            //UnityEngine.Debug.Log(surface);
+            //UnityEngine.Debug.Log("Clipped to n triangles : " + triangles.Length);
 
-            UnityEngine.Debug.Log(surface);
-            UnityEngine.Debug.Log("Clipped to n triangles : " + triangles.Length);
-
-            DisplayBuilding(surface.positionsExt.ToArray(), triangles);
+            //DisplayBuilding(surface.positionsExt.ToArray(), triangles);
+            
+        }
+    }
+    public void DisplayOneBuilding(int buildingID)
+    {
+        List<Membre> surfaces = batimentsListe[buildingID].surfaces;
+        foreach (var surface in surfaces)
+        {
+            var go = new GameObject();
+            go.AddComponent<MeshRenderer>();
+            go.AddComponent<MeshFilter>();
+            Mesh msh = new Mesh();
+            msh.vertices = surface.positionsExt.ToArray();
+            msh.triangles = surface.EarClipping();
+            msh.RecalculateNormals();
+            go.GetComponent<MeshFilter>().mesh = msh;
+            Instantiate(go);
             gizmos = new Vector3[surface.positionsExt.Count];
             surface.positionsExt.ToArray().CopyTo(gizmos, 0);
         }
     }
-
     //get vertices from a surface of a "batiment"
     private Vector3[] GetRandomShape(int buildingID, int surfaceID)
     {

@@ -7,7 +7,8 @@ using UnityEngine;
 
 public class Batiments
 {
-    private List<Membre> surfaces { get; set; }
+
+    public List<Membre> surfaces { get; set; }
     public string Id { get; private set; }
 
     public int NbSurfaces { get; private set; }
