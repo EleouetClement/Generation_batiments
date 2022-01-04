@@ -9,7 +9,7 @@ public class Membre
     public string ExtTexId { get; private set; }
     public List<Vector3> positionsExt { get; private set; }
     public List<Vector3> positionsInt { get; private set; }
-    public Vector3[] textures { get; private set; }
+    public List<Vector2> textures { get; set; }
 
     public Membre(string identifiant, string type)
     {

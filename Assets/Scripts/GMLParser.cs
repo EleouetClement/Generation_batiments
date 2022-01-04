@@ -19,14 +19,16 @@ public class GMLParser : MonoBehaviour
     public const int scaleConst = 1;
     static List<Batiments> batimentsListe;
     [SerializeField] string filePath;
-    private Dictionary<string, List<Vector2>> textures;
+    private Dictionary<string, List<Vector2>> texturesDic;
     UnityEngine.Vector3[] gizmos;
 
     void Start()
     {
         batimentsListe = new List<Batiments>();
+        texturesDic = new Dictionary<string, List<Vector2>>();
         LoadData();
-
+        //here we do the earclipping thing for all surfaces
+        
         //UnityEngine.Debug.Log(ParseLongFloat("13584.68321"));
 
         //Display testing
@@ -171,14 +173,28 @@ public class GMLParser : MonoBehaviour
         nsmgr.AddNamespace("app", "http://www.opengis.net/citygml/appearance/2.0");
         nsmgr.AddNamespace("core", "http://www.opengis.net/citygml/2.0");
 
+        int nbProcessors = Environment.ProcessorCount;
+
         IEnumerable<XElement> batiments = doc.XPathSelectElements("//bldg:Building", nsmgr);
+        IEnumerable<XElement> textures = doc.XPathSelectElements("//app:textureCoordinates", nsmgr);
+
+        //Get textures
+        Parallel.ForEach(textures, new ParallelOptions { MaxDegreeOfParallelism = nbProcessors }, elem => {
+            string id = elem.Attribute("ring").Value.Remove(0, 1);
+            lock (texturesDic)
+            {
+                if (!texturesDic.ContainsKey(id))
+                {
+                    texturesDic.Add(id, ProcessMemberTexture(elem.Value));
+                }
+            }
+        });
         Console.WriteLine("Il y a " + batiments.Count() + " batiments");
         //Affichages des identifiants
 
         Stopwatch stopwatch = new Stopwatch();
 
         //Get the max numbers of cores for the current maachine
-        int nbProcessors = Environment.ProcessorCount;
         stopwatch.Start();
 
 
@@ -222,7 +238,22 @@ public class GMLParser : MonoBehaviour
         stopwatch.Stop();
         UnityEngine.Debug.Log("_____DONE_____(duree : " + stopwatch.Elapsed.TotalMinutes + ")");
 
-        //Console.ReadKey();
+    }
+
+    private List<Vector2> ProcessMemberTexture(string textureContent)
+    {
+        List<string> texturesString = textureContent.Split(' ').ToList();
+
+        List<Vector2> positions = new List<Vector2>();
+        //Setting up the Vector by converting the positions into floats
+        for (int i = 0; i < texturesString.Count - 2; i += 2)
+        {
+            Vector2 tmp = Vector2.zero;
+            tmp.x = (float)Convert.ToDouble(texturesString[i], CultureInfo.InvariantCulture);
+            tmp.y = (float)Convert.ToDouble(texturesString[i + 2], CultureInfo.InvariantCulture);
+            positions.Add(tmp);
+        }
+        return positions;
     }
     static void AddMemberPositions(XElement elem, Membre surfMember, int surfaceType)
     {
@@ -240,9 +271,6 @@ public class GMLParser : MonoBehaviour
                 tmp.x = (float)((Convert.ToDouble(positionsString[i], CultureInfo.InvariantCulture) - 1848779d) / scaleConst);
                 tmp.y = (float)(Convert.ToDouble(positionsString[i + 2], CultureInfo.InvariantCulture) / scaleConst);
                 tmp.z = (float)((Convert.ToDouble(positionsString[i + 1], CultureInfo.InvariantCulture) - 5170460d) / scaleConst);
-                //tmp.x = ParseLongFloat(positionsString[i]);
-                //tmp.y = ParseLongFloat(positionsString[i+1]);
-                // tmp.z = ParseLongFloat(positionsString[i+2]);
                 positions.Add(tmp);
             }
             //Adding the poslist to the surfaceMember
@@ -261,7 +289,7 @@ public class GMLParser : MonoBehaviour
 
         }
     }
-    static void ProcessMember(IEnumerable<XElement> surfaces, string id, string type, Batiments tmp)
+    void ProcessMember(IEnumerable<XElement> surfaces, string id, string type, Batiments tmp)
     {
         foreach (var surface in surfaces)
         {
@@ -281,7 +309,14 @@ public class GMLParser : MonoBehaviour
             {
                 AddMemberPositions(inte, surfMember, 2);
             }
+            //Ajout des positions de texture
+            var textureId = ext != null ? ext.Attribute(xsGml + "id").Value : inte.Attribute(xsGml + "id").Value;
+            if (texturesDic.TryGetValue(textureId, out List<Vector2> texturesPositions))
+                surfMember.textures = texturesPositions;
+            else
+                UnityEngine.Debug.Log("Unable to find texture for surface : " + id);
 
+            //Ajout de la surface au batiment
             tmp.AddSurface(surfMember);
         }
     }
