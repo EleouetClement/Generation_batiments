@@ -47,7 +47,6 @@ public class GMLParser : MonoBehaviour
         return vertices;
     }
 
-
     //Display a building using vertices and triangles array 
     private void DisplayBuilding(UnityEngine.Vector3[] vertices, int[] triangles)
     {
@@ -60,14 +59,12 @@ public class GMLParser : MonoBehaviour
         gameObject.GetComponent<MeshFilter>().mesh = msh;
     }
 
-
     private void Picking1Sufrace()
     {
         Batiments testBuilding = batimentsListe[156];
         Membre surface1 = testBuilding.GetSurface(0);
         surface1.EarClipping();
     }
-
 
     static double ParseLongFloat(string number)
     {
@@ -99,8 +96,6 @@ public class GMLParser : MonoBehaviour
         double value = Convert.ToDouble(left, CultureInfo.InvariantCulture);
         return value;
     }
-
-
 
     public void LoadData()
     {
@@ -161,7 +156,6 @@ public class GMLParser : MonoBehaviour
                 type = "RoofSurface";
                 ProcessMember(roofs, id, type, tmp);
                 //La surface est une "Roofsurface"
-                UnityEngine.Debug.Log("===============================================RoofSurface===============================================");
             }
             else
             {
@@ -172,7 +166,6 @@ public class GMLParser : MonoBehaviour
             {
                 type = "WallSurface";
                 ProcessMember(walls, id, type, tmp);
-                UnityEngine.Debug.Log("===============================================WallSurface===============================================");
             }
             else
             {
@@ -205,8 +198,8 @@ public class GMLParser : MonoBehaviour
             {
                 Vector3 tmp = Vector3.zero;
                 tmp.x = (float)Convert.ToDouble(positionsString[i], CultureInfo.InvariantCulture) / scaleConst;
-                tmp.y = (float)Convert.ToDouble(positionsString[i + 1], CultureInfo.InvariantCulture) / scaleConst;
-                tmp.z = (float)Convert.ToDouble(positionsString[i + 2], CultureInfo.InvariantCulture) / scaleConst;
+                tmp.y = (float)Convert.ToDouble(positionsString[i + 2], CultureInfo.InvariantCulture) / scaleConst;
+                tmp.z = (float)Convert.ToDouble(positionsString[i + 1], CultureInfo.InvariantCulture) / scaleConst;
                 //tmp.x = ParseLongFloat(positionsString[i]);
                 //tmp.y = ParseLongFloat(positionsString[i+1]);
                // tmp.z = ParseLongFloat(positionsString[i+2]);
