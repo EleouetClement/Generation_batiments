@@ -1,7 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-
 public class Membre
 {
     public string Id { get; private set; }
@@ -22,10 +21,29 @@ public class Membre
         positionsInt = new List<Vector>();
     }
 
-    public int [] EarClipping()
+    /// <summary>
+    /// Internal buffer for ear clipping multicall optimisation. Do not touch.
+    /// </summary>
+    private int[] clipBuffer;
+    /// <summary>
+    /// Computes a list of triangular surfaces for a polygon. This method is buffered.
+    /// </summary>
+    /// <returns>An array of vertice index containing triangle data for this polygon. Multiple calls to the function will return a buffered result, not to be modified.</returns>
+    public int[] EarClipping()
     {
-        //TO DO
-        return null;
+        if (clipBuffer != null) return clipBuffer;
+        Vector2[] workbuffer = new Vector2[positionsExt.Count];
+        bool vertical = false; // FIXME : compute plane verticality
+        for (int i = 0; i < workbuffer.Length; i++)
+            workbuffer[i] = new Vector2((float)positionsExt[i].x, vertical ? (float)positionsExt[i].y : (float)positionsExt[i].z);
+        int[] answer;
+        string error;
+
+        if (!TriangulatePolygon.Triangulate(workbuffer, out answer, out error))
+            Debug.Log(error);
+
+        clipBuffer = answer;
+        return answer;
     }
 
     //Set the poslist of an exterior surface
