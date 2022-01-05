@@ -9,7 +9,9 @@ using UnityEngine;
 public static class TriangulatePolygon
 {
 
-    public const bool DEBUGMODE = false;
+    public const bool DEBUGMODE = true;
+
+    public const int maxiterations = 32;
 
     /// <summary>
     /// Computes the triangulation of a polygon defined by a 2d vertex array, and generates a triangle array to display it.
@@ -21,11 +23,16 @@ public static class TriangulatePolygon
     public static bool Triangulate(Vector2[] vertices, out int[] triangles, out string errorMessage)
     {
         triangles = null;
-        errorMessage = "Unknown error, Iteration culled after 1000 attempts.";
+        errorMessage = "Unknown error, Iteration culled after" + (maxiterations + 2) + " attempts.";
 
+        if (vertices.Length == 4)
+        {
+            triangles = new int[] { 0, 2, 1, 0, 3, 2 };
+            return true;
+        }
 
-        if(DEBUGMODE) for (int i = 0; i < vertices.Length; i++)
-            Debug.Log("Poly triangulation flat : " + vertices[i]);
+        if (DEBUGMODE) for (int i = 0; i < vertices.Length; i++)
+                Debug.Log("Poly triangulation flat : " + vertices[i]);
 
         if (vertices is null)
         {
@@ -37,9 +44,9 @@ public static class TriangulatePolygon
             errorMessage = "The vertex list must have at least 3 vertices.";
             return false;
         }
-        else if (vertices.Length > 1024)
+        else if (vertices.Length > maxiterations)
         {
-            errorMessage = "The max vertex list length is 1024";
+            errorMessage = "The max vertex list length is " + maxiterations;
             return false;
         }
 
@@ -53,7 +60,7 @@ public static class TriangulatePolygon
         triangles = new int[totalTriangleIndexCount];
         int triangleIndexCount = 0;
 
-        int alarm = 1000;
+        int alarm = maxiterations + 2;
 
         while (indexList.Count > 3 && alarm >= 0)
         {
@@ -72,7 +79,7 @@ public static class TriangulatePolygon
                 Vector2 va_to_vc = vc - va;
 
                 // Is ear test vertex convex?
-                if (Cross2(va_to_vb, va_to_vc) > 0f)
+                if (Cross2(va_to_vb, va_to_vc) >= 0f)
                 {
                     if (DEBUGMODE) Debug.Log("Convex angle, skipping " + i + " with va_to_vb=" + va_to_vb + " and va_to_vc=" + va_to_vc);
                     continue;

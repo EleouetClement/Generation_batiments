@@ -33,14 +33,22 @@ public class Membre
     {
         if (clipBuffer != null) return clipBuffer;
         Vector2[] workbuffer = new Vector2[positionsExt.Count];
-        bool vertical = false; // FIXME : compute plane verticality
+
+        Vector3 cross = Vector3.Cross((positionsExt[0] - positionsExt[1]).normalized, (positionsExt[0] - positionsExt[2]).normalized).normalized;
+        bool vertical = Mathf.Abs(Vector3.Dot(cross, Vector3.up)) < 0.01f;
+
+        Debug.Log("-------------------------------------------------------------");
+        Debug.Log(this);
+        Debug.Log("Vectors used to define plan : " + (positionsExt[0] - positionsExt[1]).normalized + " and " + (positionsExt[0] - positionsExt[2]).normalized + " generate cross : " + cross);
+        Debug.Log("Dot check" + Vector3.Dot(cross, Vector3.up) + " / vertical " + vertical);
+
         for (int i = 0; i < workbuffer.Length; i++)
-            workbuffer[i] = new Vector2((float)positionsExt[i].x, vertical ? (float)positionsExt[i].y : (float)positionsExt[i].z);
+            workbuffer[i] = new Vector2((float)positionsExt[i].x, vertical ? (float)(positionsExt[i].y + positionsExt[i].z * 0.17f) : (float)positionsExt[i].z);
+
         int[] answer;
         string error;
-
         if (!TriangulatePolygon.Triangulate(workbuffer, out answer, out error))
-            Debug.Log(error);
+            Debug.Log("Triangulation error : " + error);
 
         clipBuffer = answer;
         return answer;
@@ -76,7 +84,7 @@ public class Membre
     {
         string toreturn = "Member " + Id + " : {";
         for (int i = 0; i < positionsExt.Count; i++)
-            toreturn += (i==0?"":",")+positionsExt[i];
+            toreturn += (i == 0 ? "" : ",") + positionsExt[i];
         return toreturn + "}";
     }
 }
