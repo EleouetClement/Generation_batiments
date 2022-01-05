@@ -9,6 +9,7 @@ using System.Xml.XPath;
 using System.Diagnostics;
 using System.Globalization;
 using UnityEngine;
+using System.IO;
 
 public class GMLParser : MonoBehaviour
 {
@@ -21,14 +22,15 @@ public class GMLParser : MonoBehaviour
     [SerializeField] string filePath;
     private Dictionary<string, List<Vector2>> texturesDic;
     UnityEngine.Vector3[] gizmos;
-
+    public Material mat;
     void Start()
     {
         batimentsListe = new List<Batiments>();
         texturesDic = new Dictionary<string, List<Vector2>>();
         LoadData();
+        //mat = new Material(Shader.Find("Unlit/Texture"));
         //here we do the earclipping thing for all surfaces
-        
+
         //UnityEngine.Debug.Log(ParseLongFloat("13584.68321"));
 
         //Display testing
@@ -48,8 +50,7 @@ public class GMLParser : MonoBehaviour
         }*/
 
         {
-            int buildingid = 5;
-            DisplayOneBuilding(buildingid);
+            DisplayOneBuilding();
             //Membre surface = batimentsListe[buildingid].GetSurface(surfaceid);
             //int[] triangles = surface.EarClipping();
 
@@ -60,22 +61,33 @@ public class GMLParser : MonoBehaviour
             
         }
     }
-    public void DisplayOneBuilding(int buildingID)
+    public void DisplayOneBuilding()
     {
-        List<Membre> surfaces = batimentsListe[buildingID].surfaces;
-        foreach (var surface in surfaces)
-        {
-            var go = new GameObject();
-            go.AddComponent<MeshRenderer>();
-            go.AddComponent<MeshFilter>();
-            Mesh msh = new Mesh();
-            msh.vertices = surface.positionsExt.ToArray();
-            msh.triangles = surface.EarClipping();
-            msh.RecalculateNormals();
-            go.GetComponent<MeshFilter>().mesh = msh;
-            Instantiate(go);
-            gizmos = new Vector3[surface.positionsExt.Count];
-            surface.positionsExt.ToArray().CopyTo(gizmos, 0);
+        int nbProcessors = Environment.ProcessorCount;
+
+        foreach(var bat in batimentsListe.Take(20))
+        { 
+            Texture2D tex = Resources.Load(bat.Id) as Texture2D;
+            mat.mainTexture = tex;
+
+            List<Membre> surfaces = bat.surfaces;
+            foreach (var surface in surfaces)
+            {
+                var go = new GameObject();
+                go.AddComponent<MeshRenderer>();
+                go.AddComponent<MeshFilter>();
+                Mesh msh = new Mesh();
+                msh.vertices = surface.positionsExt.ToArray();
+                msh.triangles = surface.EarClipping();
+                msh.uv = surface.textures.ToArray();
+                msh.RecalculateNormals();
+                go.GetComponent<MeshFilter>().mesh = msh;
+
+                go.GetComponent<MeshRenderer>().material = mat;
+                Instantiate(go);
+                gizmos = new Vector3[surface.positionsExt.Count];
+                surface.positionsExt.ToArray().CopyTo(gizmos, 0);
+            }
         }
     }
     //get vertices from a surface of a "batiment"

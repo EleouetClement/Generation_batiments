@@ -10,7 +10,7 @@ public class Batiments
 
     public List<Membre> surfaces { get; set; }
     public string Id { get; private set; }
-
+    public string textureName;
     public int NbSurfaces { get; private set; }
 
     public Batiments(string identifiant)
@@ -18,8 +18,9 @@ public class Batiments
         Id = identifiant;
         surfaces = new List<Membre>();
         NbSurfaces = 0;
+        textureName = $"{Id}.jpg";
     }
-
+   
     public void AddSurface(Membre m)
     {
         surfaces.Add(m);
