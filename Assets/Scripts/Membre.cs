@@ -47,8 +47,12 @@ public class Membre
 
         int[] answer;
         string error;
-        if (!TriangulatePolygon.Triangulate(workbuffer, out answer, out error))
-            Debug.Log("Triangulation error : " + error);
+        if (!TriangulatePolygon.Triangulate(workbuffer, out answer, out error, false)) {
+            Debug.Log("Triangulation error : " + error + "\nTrying with anticonvex polygonisation...");
+            if (!TriangulatePolygon.Triangulate(workbuffer, out answer, out error, true))
+                Debug.Log("Triangulation error : " + error + "\nGiving up on this one. Sorry.");
+        }
+            
 
         clipBuffer = answer;
         return answer;

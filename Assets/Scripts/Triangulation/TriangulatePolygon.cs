@@ -9,7 +9,7 @@ using UnityEngine;
 public static class TriangulatePolygon
 {
 
-    public const bool DEBUGMODE = true;
+    public const bool DEBUGMODE = false;
 
     public const int maxiterations = 32;
 
@@ -20,7 +20,7 @@ public static class TriangulatePolygon
     /// <param name="triangles">Sets this array pointer to vertices pointers. Undefined if this method returns false.</param>
     /// <param name="errorMessage">Error message outing. This pointer will be set to an error description if this method returns false</param>
     /// <returns>True if the triangulation was sucessful.</returns>
-    public static bool Triangulate(Vector2[] vertices, out int[] triangles, out string errorMessage)
+    public static bool Triangulate(Vector2[] vertices, out int[] triangles, out string errorMessage, bool inversePoly)
     {
         triangles = null;
         errorMessage = "Unknown error, Iteration culled after" + (maxiterations + 2) + " attempts.";
@@ -79,7 +79,7 @@ public static class TriangulatePolygon
                 Vector2 va_to_vc = vc - va;
 
                 // Is ear test vertex convex?
-                if (Cross2(va_to_vb, va_to_vc) >= 0f)
+                if ((!inversePoly && Cross2(va_to_vb, va_to_vc) < 0f) || (inversePoly && Cross2(va_to_vb, va_to_vc) >= 0f))
                 {
                     if (DEBUGMODE) Debug.Log("Convex angle, skipping " + i + " with va_to_vb=" + va_to_vb + " and va_to_vc=" + va_to_vc);
                     continue;
