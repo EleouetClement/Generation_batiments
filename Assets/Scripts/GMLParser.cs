@@ -28,38 +28,7 @@ public class GMLParser : MonoBehaviour
         batimentsListe = new List<Batiments>();
         texturesDic = new Dictionary<string, List<Vector2>>();
         LoadData();
-        //mat = new Material(Shader.Find("Unlit/Texture"));
-        //here we do the earclipping thing for all surfaces
-
-        //UnityEngine.Debug.Log(ParseLongFloat("13584.68321"));
-
-        //Display testing
-        /*{
-         *
-            Vector3[] vertices = GetRandomShape(5, 0);
-            UnityEngine.Debug.Log("Got polygon with " + vertices.Length + " vertices");
-            int[] triangles = { 0, 1, 2 };
-            //DisplayBuilding(vertices, triangles);
-            gizmos = new Vector3[3];
-            vertices.CopyTo(gizmos, 0);
-            UnityEngine.Debug.Log(gizmos[0]);
-            UnityEngine.Debug.Log(gizmos[1]);
-            UnityEngine.Debug.Log(gizmos[2]);
-            UnityEngine.Debug.Log(batimentsListe[5].GetSurface(0));
-            UnityEngine.Debug.Log("------------- Triangle debugged, debugging polygon");
-        }*/
-
-        {
-            DisplayOneBuilding();
-            //Membre surface = batimentsListe[buildingid].GetSurface(surfaceid);
-            //int[] triangles = surface.EarClipping();
-
-            //UnityEngine.Debug.Log(surface);
-            //UnityEngine.Debug.Log("Clipped to n triangles : " + triangles.Length);
-
-            //DisplayBuilding(surface.positionsExt.ToArray(), triangles);
-            
-        }
+        DisplayOneBuilding();
     }
     public void DisplayOneBuilding()
     {
