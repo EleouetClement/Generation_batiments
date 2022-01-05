@@ -34,10 +34,9 @@ public class GMLParser : MonoBehaviour
     {
         int nbProcessors = Environment.ProcessorCount;
 
-        foreach(var bat in batimentsListe.Take(20))
-        { 
+        foreach(var bat in batimentsListe.Take(100))
+        {
             Texture2D tex = Resources.Load(bat.Id) as Texture2D;
-            mat.mainTexture = tex;
 
             List<Membre> surfaces = bat.surfaces;
             foreach (var surface in surfaces)
@@ -53,6 +52,7 @@ public class GMLParser : MonoBehaviour
                 go.GetComponent<MeshFilter>().mesh = msh;
 
                 go.GetComponent<MeshRenderer>().material = mat;
+                go.GetComponent<MeshRenderer>().material.mainTexture = tex;
                 Instantiate(go);
                 gizmos = new Vector3[surface.positionsExt.Count];
                 surface.positionsExt.ToArray().CopyTo(gizmos, 0);
@@ -245,7 +245,7 @@ public class GMLParser : MonoBehaviour
 
         List<Vector2> positions = new List<Vector2>();
         //Setting up the Vector by converting the positions into floats
-        for (int i = 0; i < texturesString.Count; i += 2)
+        for (int i = 0; i < texturesString.Count-2; i += 2)
         {
             Vector2 tmp = Vector2.zero;
             tmp.x = (float)Convert.ToDouble(texturesString[i], CultureInfo.InvariantCulture);
@@ -269,9 +269,9 @@ public class GMLParser : MonoBehaviour
             string extId = elem.Attribute(xsGml + "id").Value;
             List<string> positionsString = elem.Element(xsGml + "posList").Value.Split(' ').ToList();
 
-            List<Vector3> positions = new List<Vector3>(positionsString.Count);
+            List<Vector3> positions = new List<Vector3>(positionsString.Count-3);
             //Setting up the Vector by converting the positions into floats
-            for (int i = 0; i < positionsString.Count; i += 3)
+            for (int i = 0; i < positionsString.Count-3; i += 3)
             {
                 Vector3 tmp = Vector3.zero;
                 tmp.x = (float)((Convert.ToDouble(positionsString[i], CultureInfo.InvariantCulture) - 1848779d) / scaleConst);
