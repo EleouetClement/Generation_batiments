@@ -245,11 +245,11 @@ public class GMLParser : MonoBehaviour
 
         List<Vector2> positions = new List<Vector2>();
         //Setting up the Vector by converting the positions into floats
-        for (int i = 0; i < texturesString.Count - 2; i += 2)
+        for (int i = 0; i < texturesString.Count; i += 2)
         {
             Vector2 tmp = Vector2.zero;
             tmp.x = (float)Convert.ToDouble(texturesString[i], CultureInfo.InvariantCulture);
-            tmp.y = (float)Convert.ToDouble(texturesString[i + 2], CultureInfo.InvariantCulture);
+            tmp.y = (float)Convert.ToDouble(texturesString[i + 1], CultureInfo.InvariantCulture);
             positions.Add(tmp);
         }
         return positions;
@@ -269,9 +269,9 @@ public class GMLParser : MonoBehaviour
             string extId = elem.Attribute(xsGml + "id").Value;
             List<string> positionsString = elem.Element(xsGml + "posList").Value.Split(' ').ToList();
 
-            List<Vector3> positions = new List<Vector3>(positionsString.Count - 3);
+            List<Vector3> positions = new List<Vector3>(positionsString.Count);
             //Setting up the Vector by converting the positions into floats
-            for (int i = 0; i < positionsString.Count - 3; i += 3)
+            for (int i = 0; i < positionsString.Count; i += 3)
             {
                 Vector3 tmp = Vector3.zero;
                 tmp.x = (float)((Convert.ToDouble(positionsString[i], CultureInfo.InvariantCulture) - 1848779d) / scaleConst);
