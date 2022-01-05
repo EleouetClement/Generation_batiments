@@ -329,6 +329,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   filePath: C:\Users\Zeineb Derbel\Desktop\BRON_BATI_2018.gml
+  mat: {fileID: 2100000, guid: fe09806a8cca7ba418e4cd29ceebff11, type: 2}
 --- !u!4 &1484825491
 Transform:
   m_ObjectHideFlags: 0
