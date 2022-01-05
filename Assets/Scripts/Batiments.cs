@@ -26,10 +26,16 @@ public class Batiments
         NbSurfaces++;
     }
 
-    public void BuildMesh()
+
+    /// <summary>
+    /// TO DO
+    /// </summary>
+    /// <returns></returns>
+    public Mesh BuildMesh()
     {
         //TO DO
         //throw new NotImplementedException();
+        return null;
     }
 
     public Membre GetSurface(int id)

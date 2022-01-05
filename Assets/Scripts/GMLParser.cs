@@ -33,6 +33,7 @@ public class GMLParser : MonoBehaviour
 
         //Display testing
         /*{
+         *
             Vector3[] vertices = GetRandomShape(5, 0);
             UnityEngine.Debug.Log("Got polygon with " + vertices.Length + " vertices");
             int[] triangles = { 0, 1, 2 };
@@ -108,6 +109,13 @@ public class GMLParser : MonoBehaviour
         surface1.EarClipping();
     }
 
+    /// <summary>
+    /// DEPRECATED
+    /// This function takes a string and returns a float number
+    /// it cuts the number before and after the dot in order to avoid overflow
+    /// </summary>
+    /// <param name="number"></param>
+    /// <returns></returns>
     static double ParseLongFloat(string number)
     {
         string[] numbers = number.Split('.');
@@ -139,6 +147,11 @@ public class GMLParser : MonoBehaviour
         return value;
     }
 
+    /// <summary>
+    /// This function open the file at the path given by 
+    /// the filepath. It search for all the buildings
+    /// and load all of their surface in objects
+    /// </summary>
     public void LoadData()
     {
         //filePath = "C:\\Users\\celeouet\\Cours\\S1\\BRON_2018\\BRON_BATI_2018.gml";
@@ -204,14 +217,12 @@ public class GMLParser : MonoBehaviour
             string id = elem.Attribute(xsGml + "id").Value;
             string type;
             Batiments tmp = new Batiments(id);
-            //Eventuellement créer une fonction pour y ranger les operations suivantes
             IEnumerable<XElement> roofs = elem.Descendants(xBldg + "RoofSurface");
             if (roofs.Any())
             {
 
                 type = "RoofSurface";
                 ProcessMember(roofs, id, type, tmp);
-                //La surface est une "Roofsurface"
             }
             else
             {
@@ -240,6 +251,13 @@ public class GMLParser : MonoBehaviour
 
     }
 
+    /// <summary>
+    /// Takes a string containing all the textures coordinates and parse them into Vector2
+    /// 
+    /// </summary>
+    /// <param name="textureContent"></param>
+    ///
+    /// <returns type="Vector2"></returns>
     private List<Vector2> ProcessMemberTexture(string textureContent)
     {
         List<string> texturesString = textureContent.Split(' ').ToList();
@@ -255,6 +273,13 @@ public class GMLParser : MonoBehaviour
         }
         return positions;
     }
+    /// <summary>
+    /// take a surface and an XElement containing the positions of the surface
+    /// to load it, parse it into float then it save into the surface positions list
+    /// </summary>
+    /// <param name="elem"></param>
+    /// <param name="surfMember"></param>
+    /// <param name="surfaceType"></param>
     static void AddMemberPositions(XElement elem, Membre surfMember, int surfaceType)
     {
         if (elem != null)
@@ -289,15 +314,23 @@ public class GMLParser : MonoBehaviour
 
         }
     }
+
+    /// <summary>
+    /// taked a group of surfaces attached to a building to parse them and load the positions and textures coordinates
+    /// </summary>
+    /// <param name="surfaces">liste of "Membre"</param>
+    /// <param name="id">Building's ID</param>
+    /// <param name="type">Roof or wall surfaces</param>
+    /// <param name="tmp">target building</param>
     void ProcessMember(IEnumerable<XElement> surfaces, string id, string type, Batiments tmp)
     {
         foreach (var surface in surfaces)
         {
-            //Ajout de la surface a la liste du batiment
+            
             id = surface.Attribute(xsGml + "id").Value;
-            //Recuperation de l'identifiant de la surface
+            //getting surface id
             Membre surfMember = new Membre(id, type);
-            //Recuperation de la LinearRing pour l'identifiant de l'lext et des positions
+            //Getting "linearRing" id for the positions and the textures coordinates later
             XElement ext = surface.Descendants(xsGml + "exterior").Descendants(xsGml + "LinearRing").FirstOrDefault();
             if (ext != null)
             {
@@ -309,14 +342,14 @@ public class GMLParser : MonoBehaviour
             {
                 AddMemberPositions(inte, surfMember, 2);
             }
-            //Ajout des positions de texture
+            //Add texture coordinates
             var textureId = ext != null ? ext.Attribute(xsGml + "id").Value : inte.Attribute(xsGml + "id").Value;
             if (texturesDic.TryGetValue(textureId, out List<Vector2> texturesPositions))
                 surfMember.textures = texturesPositions;
             else
                 UnityEngine.Debug.Log("Unable to find texture for surface : " + id);
 
-            //Ajout de la surface au batiment
+            //Adding the surface into the building's surfaces list
             tmp.AddSurface(surfMember);
         }
     }

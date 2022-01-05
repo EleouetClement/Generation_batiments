@@ -45,8 +45,11 @@ public class Membre
         clipBuffer = answer;
         return answer;
     }
-
-    //Set the poslist of an exterior surface
+    /// <summary>
+    /// Set the poslist of an exterior surface
+    /// </summary>
+    /// <param name="id"></param>
+    /// <param name="positions"></param>
     public void SetExt(string id, List<Vector3> positions)
     {
         //Adding the ExtId
@@ -56,8 +59,11 @@ public class Membre
 
 
     }
-
-    //Set the poslist of an interior surface
+    /// <summary>
+    /// Set the poslist of an interior surface
+    /// </summary>
+    /// <param name="id"></param>
+    /// <param name="positions"></param>
     public void SetInt(string id, List<Vector3> positions)
     {
         //Adding the ExtId
