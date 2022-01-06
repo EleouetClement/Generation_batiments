@@ -4,7 +4,7 @@
 >- DERBEL Zeineb
 >- CANDELA Nicolas
 >- BELGACEM Fatma
->- FOMOSA Mathieu
+>- FORMOSA Mathieu
 >- ELEOUET Clément
 
 ## Description 
