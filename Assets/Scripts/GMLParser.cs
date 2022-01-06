@@ -17,7 +17,7 @@ public class GMLParser : MonoBehaviour
     static XNamespace xBldg;
     static XNamespace xsApp;
     static XNamespace xsCore;
-    public const int scaleConst = 1;
+    public const int scaleConst = 1000;
     static List<Batiments> batimentsListe;
     [SerializeField] string filePath;
     private Dictionary<string, List<Vector2>> texturesDic;
@@ -34,7 +34,7 @@ public class GMLParser : MonoBehaviour
     {
         int nbProcessors = Environment.ProcessorCount;
 
-        foreach(var bat in batimentsListe.Take(100))
+        foreach(var bat in batimentsListe.Take(1000))
         {
             Texture2D tex = Resources.Load(bat.Id) as Texture2D;
 
@@ -335,16 +335,16 @@ public class GMLParser : MonoBehaviour
         }
     }
 
-    private void OnDrawGizmos()
-    {
-        if (gizmos == null)
-        {
-            return;
-        }
-        Gizmos.color = Color.red;
-        for (int i = 0; i < gizmos.Length; i++)
-        {
-            Gizmos.DrawSphere(gizmos[i], 0.1f);
-        }
-    }
+    //private void OnDrawGizmos()
+    //{
+    //    if (gizmos == null)
+    //    {
+    //        return;
+    //    }
+    //    Gizmos.color = Color.red;
+    //    for (int i = 0; i < gizmos.Length; i++)
+    //    {
+    //        Gizmos.DrawSphere(gizmos[i], 0.1f);
+    //    }
+    //}
 }
