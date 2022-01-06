@@ -17,26 +17,165 @@ public class GMLParser : MonoBehaviour
     static XNamespace xBldg;
     static XNamespace xsApp;
     static XNamespace xsCore;
-    public const int scaleConst = 1;
+    public const int scaleConst = 1000;
     static List<Batiments> batimentsListe;
     [SerializeField] string filePath;
     private Dictionary<string, List<Vector2>> texturesDic;
     UnityEngine.Vector3[] gizmos;
     public Material mat;
+    public List<GameObject> objectsToCombine;
     void Start()
     {
+        objectsToCombine = new List<GameObject>();
         batimentsListe = new List<Batiments>();
         texturesDic = new Dictionary<string, List<Vector2>>();
         LoadData();
         DisplayOneBuilding();
+        Combine();
     }
+    private int GetTextureSize(GameObject[] o)
+    {
+        List<Texture> textures = new List<Texture>();
+        // Find unique textures
+        for (int i = 0; i < o.Length; i++)
+        {
+            if (o[i].TryGetComponent(out MeshRenderer renderer) && !textures.Contains(renderer.material.mainTexture))
+            {
+                textures.Add(renderer.material.mainTexture);
+            }
+        }
+        if (textures.Count == 1) return 1;
+        if (textures.Count < 5) return 2;
+        if (textures.Count < 17) return 4;
+        if (textures.Count < 65) return 8;
+        if (textures.Count < 129) return 16;
+        if (textures.Count < 257) return 32;
+        if (textures.Count < 513) return 64;
+        if (textures.Count < 1025) return 128;
+        if (textures.Count < 2049) return 256;
+        if (textures.Count < 4097) return 512;
+        // Doesn't handle more than 64 different textures but I think you can see how to extend
+        return 0;
+    }
+
+    private void Combine()
+    {
+
+        int size;
+        int originalSize;
+        int pow2;
+        Texture2D combinedTexture;
+        Material material;
+        Texture2D texture;
+        Mesh mesh;
+        System.Collections.Hashtable textureAtlas = new System.Collections.Hashtable();
+
+        if (objectsToCombine.Count > 1 && objectsToCombine[0].TryGetComponent(out MeshRenderer renderer))
+        {
+            originalSize = renderer.material.mainTexture.width;
+            pow2 = GetTextureSize(objectsToCombine.ToArray());
+            size = pow2 * originalSize;
+            combinedTexture = new Texture2D(size, size, TextureFormat.RGB24, true);
+
+            // Create the combined texture (remember to ensure the total size of the texture isn't
+            // larger than the platform supports)
+            for (int i = 0; i < objectsToCombine.Count; i++)
+            {
+                if (objectsToCombine[i].TryGetComponent(out MeshRenderer rdr))
+                {
+                    texture = (Texture2D)rdr.material.mainTexture;
+                    if (!textureAtlas.ContainsKey(texture))
+                    {
+                        combinedTexture.SetPixels((i % pow2) * originalSize, (i / pow2) * originalSize, originalSize, originalSize, texture.GetPixels());
+                        textureAtlas.Add(texture, new Vector2(i % pow2, i / pow2));
+                    }
+                }
+            }
+            combinedTexture.Apply();
+            material = new Material(renderer.material);
+            material.mainTexture = combinedTexture;
+
+            // Update texture co-ords for each mesh (this will only work for meshes with coords betwen 0 and 1).
+            for (int i = 0; i < objectsToCombine.Count; i++)
+            {
+                if (objectsToCombine[i].TryGetComponent(out MeshFilter filter) && objectsToCombine[i].TryGetComponent(out MeshRenderer rdr))
+                {
+                    mesh = filter.mesh;
+                    Vector2[] uv = new Vector2[mesh.uv.Length];
+                    Vector2 offset;
+                    if (textureAtlas.ContainsKey(rdr.material.mainTexture))
+                    {
+                        offset = (Vector2)textureAtlas[rdr.material.mainTexture];
+                        for (int u = 0; u < mesh.uv.Length; u++)
+                        {
+                            uv[u] = mesh.uv[u] / (float)pow2;
+                            uv[u].x += ((float)offset.x) / (float)pow2;
+                            uv[u].y += ((float)offset.y) / (float)pow2;
+                        }
+                    }
+                    else
+                    {
+                        // This happens if you use the same object more than once, don't do it :)
+                    }
+
+                    mesh.uv = uv;
+                    rdr.material = material;
+                }
+            }
+
+            // Combine each mesh marked as static
+            int staticCount = 0;
+            CombineInstance[] combine = new CombineInstance[objectsToCombine.Count];
+            for (int i = 0; i < objectsToCombine.Count; i++)
+            {
+                if (objectsToCombine[i].isStatic)
+                {
+                    staticCount++;
+                    combine[i].mesh = objectsToCombine[i].GetComponent<MeshFilter>().mesh;
+                    combine[i].transform = objectsToCombine[i].transform.localToWorldMatrix;
+                }
+            }
+
+            // Create a mesh filter and renderer
+            if (staticCount > 1)
+            {
+                MeshFilter nFilter = gameObject.AddComponent<MeshFilter>();
+                MeshRenderer nRenderer = gameObject.AddComponent<MeshRenderer>();
+                nFilter.mesh = new Mesh();
+                nFilter.mesh.CombineMeshes(combine);
+                renderer.material = material;
+
+                // Disable all the static object renderers
+                for (int i = 0; i < objectsToCombine.Count; i++)
+                {
+                    if (objectsToCombine[i].isStatic && objectsToCombine[i].TryGetComponent(out MeshFilter filter) && objectsToCombine[i].TryGetComponent(out MeshRenderer rdr))
+                    {
+                        filter.mesh = null;
+                        rdr.material = null;
+                        rdr.enabled = false;
+                    }
+                }
+            }
+
+            Resources.UnloadUnusedAssets();
+        }
+    }
+
+
+
+
     public void DisplayOneBuilding()
     {
         int nbProcessors = Environment.ProcessorCount;
-
+        //List<MeshFilter> meshs = new List<MeshFilter>();
+        List<CombineInstance> combine = new List<CombineInstance>();
+        MeshFilter mf = gameObject.AddComponent<MeshFilter>();
+        gameObject.AddComponent<MeshRenderer>();
+        int i = 0;
         foreach(var bat in batimentsListe.Take(100))
         {
             Texture2D tex = Resources.Load(bat.Id) as Texture2D;
+
 
             List<Membre> surfaces = bat.surfaces;
             foreach (var surface in surfaces)
@@ -49,15 +188,25 @@ public class GMLParser : MonoBehaviour
                 msh.triangles = surface.EarClipping();
                 msh.uv = surface.textures.ToArray();
                 msh.RecalculateNormals();
+                //combine.Add(new CombineInstance
+                //{
+                //    mesh = msh,
+                //    transform = Matrix4x4.identity,
+                //    subMeshIndex = i
+                //}) ;
+                //i++;
                 go.GetComponent<MeshFilter>().mesh = msh;
-
                 go.GetComponent<MeshRenderer>().material = mat;
                 go.GetComponent<MeshRenderer>().material.mainTexture = tex;
-                Instantiate(go);
-                gizmos = new Vector3[surface.positionsExt.Count];
-                surface.positionsExt.ToArray().CopyTo(gizmos, 0);
-            }
+                objectsToCombine.Add(Instantiate(go));
+                //gizmos = new Vector3[surface.positionsExt.Count];
+
+                //surface.positionsExt.ToArray().CopyTo(gizmos, 0);
+            }  
         }
+        mf.mesh = new Mesh();
+        mf.mesh.subMeshCount = i;
+        mf.mesh.CombineMeshes(combine.ToArray());
     }
     //get vertices from a surface of a "batiment"
     private Vector3[] GetRandomShape(int buildingID, int surfaceID)
@@ -335,16 +484,16 @@ public class GMLParser : MonoBehaviour
         }
     }
 
-    private void OnDrawGizmos()
-    {
-        if (gizmos == null)
-        {
-            return;
-        }
-        Gizmos.color = Color.red;
-        for (int i = 0; i < gizmos.Length; i++)
-        {
-            Gizmos.DrawSphere(gizmos[i], 0.1f);
-        }
-    }
+    //private void OnDrawGizmos()
+    //{
+    //    if (gizmos == null)
+    //    {
+    //        return;
+    //    }
+    //    Gizmos.color = Color.red;
+    //    for (int i = 0; i < gizmos.Length; i++)
+    //    {
+    //        Gizmos.DrawSphere(gizmos[i], 0.1f);
+    //    }
+    //}
 }
